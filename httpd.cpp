@@ -328,6 +328,8 @@ int global_init( int argc, char *argv[] )
 	char	szType[] = { "OpenVMS" };
 #elif (defined __LINUX__) /* Linux/UNIX includes */
 	char	szType[] = { "Linux" };
+#elif (defined __APPLE__) /* Mac includes */
+	char	szType[] = { "Mac OS" };
 #else
 	char	szType[] = { "Other OS" };
 #endif
