@@ -69,6 +69,102 @@ void print_syntax( void )
 			"\n"
 			);
 }
+#if (defined __vms) || (defined __LINUX__)	/* OpenVMS or Linux*/
+////////////////////////////////////////////////////////////////////////////
+// OpenVMS and Linux are missing these C-Runtime functions
+int vms_stricmp(const char *psz1, const char *psz2)
+{
+	char	ch1, ch2;
+	int		nDiff = 'a' - 'A';
+
+	/* while both not null */
+	while (*psz1 && *psz2)
+	{
+		ch1 = *psz1;
+		ch2 = *psz2;
+		if (ch1 >= 'a' && ch1 <= 'z')
+			ch1 -= nDiff;
+		if (ch2 >= 'a' && ch2 <= 'z')
+			ch2 -= nDiff;
+		if (ch1 != ch2)
+			return (int)(ch1 - ch2);
+		psz1++;
+		psz2++;
+	}
+	if (!*psz1 && *psz2)
+		return (int)-(*psz2); /* string2 is greater */
+
+	if (*psz1 && !*psz2)
+		return (int)(*psz1); /* string1 is greater */
+
+	return 0; /* is equal */
+}
+int vms_strnicmp(const char *psz1, const char *psz2, size_t cMatch)
+{
+	char	ch1, ch2;
+	size_t	n = 0;
+	int		nDiff = 'a' - 'A';
+
+	/* while both not null */
+	while (n <= cMatch && *psz1 && *psz2)
+	{
+		ch1 = *psz1;
+		ch2 = *psz2;
+		if (ch1 >= 'a' && ch1 <= 'z')
+			ch1 -= nDiff;
+		if (ch2 >= 'a' && ch2 <= 'z')
+			ch2 -= nDiff;
+		if (ch1 != ch2)
+			return (int)(ch1 - ch2);
+		n++;
+		psz1++;
+		psz2++;
+	}
+	if (n < cMatch)
+	{
+		if (!*psz1 && *psz2)
+			return (int)-(*psz2); /* string2 is greater */
+
+		if (*psz1 && !*psz2)
+			return (int)(*psz1); /* string1 is greater */
+	}
+	return 0; /* is equal */
+}
+char * vms_strlwr(char *pszBuf)
+{
+	char	*pch = pszBuf;
+	int		nDiff = 'a' - 'A';
+
+	if (!pszBuf)
+		return pszBuf;
+
+	while (*pch)
+	{
+		if (*pch >= 'A' && *pch <= 'Z')
+			*pch += nDiff;
+
+		pch++;
+	}
+	return pszBuf;
+}
+char *vms_strupr(char *pszBuf)
+{
+	char	*pch = pszBuf;
+	int		nDiff = 'a' - 'A';
+
+	if (!pszBuf)
+		return pszBuf;
+
+	while (*pch)
+	{
+		if (*pch >= 'a' && *pch <= 'z')
+			*pch -= nDiff;
+
+		pch++;
+	}
+	return pszBuf;
+}
+#endif	// OpenVMS or Linux
 /////////////////////////////////////////////////////////////////////
 // 
 int IsProcessShutdown( void )
