@@ -822,6 +822,8 @@ bool TcpMonitorMain( int nPortNbr, int nFrequency )
 		// socket error
 		if ( result < 0 )
 		{
+			if (gfTrace && gnLogLevel >= 3)
+				printf("select() err %d\n", result);
 			if ( allow_one_error )
 			{
 				allow_one_error = 0;
