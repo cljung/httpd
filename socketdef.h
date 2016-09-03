@@ -106,6 +106,7 @@ typedef struct sockaddr_in *PSOCKADDR_IN;
 #include <stdio.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <time.h>
 #include <sys/time.h>
 #include <sys/ioctl.h>
 #include <unistd.h>

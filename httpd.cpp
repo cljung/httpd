@@ -180,7 +180,7 @@ int SetProcessShutdownFlag( int nRc, const char *pszExitMessage )
 {
 	gfShutdown = true;
 	gnExitCode = nRc;
-	char *msg = "process exits";
+	char *msg = (char*)"process exits";
 	if ( pszExitMessage )
 		msg = (char*)pszExitMessage;
 	sprintf( gszExitMessage, "pid=0x%0X, rc=%d: %s"

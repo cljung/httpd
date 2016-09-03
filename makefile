@@ -5,7 +5,8 @@ CFLAGS = -W
 all:	app
 
 httpd.o: httpd.cpp httpdef.h socketdef.h ver.h
-	gcc $(DEFS) $(INC) $(CFLAGS) -c httpd.cpp -o httpd
+	cc $(DEFS) $(INC) $(CFLAGS) httpd.cpp -o httpd
+	chmod +x httpd
 
 app: httpd.o
 
