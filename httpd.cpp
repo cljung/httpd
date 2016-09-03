@@ -32,10 +32,10 @@ static long		gcRequests = 0;
 static char		gszHttpSiteName[128];
 static char		gszHttpRoot[255] = ".";
 static char		gszDefaultPage[ 64 ] = { "default.htm" };
-static const char		gszNotFound[] = { "<html><body><h1>File Not Found</h1></body></html>" };
-static const char		*gszContentType[] = { "text/html", "text/plain", "image/gif", "image/jpeg", "text/css", "image/png¸" };
-static const char		*gszWeekday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-static const char		*gszMonth[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun"
+static const char	gszNotFound[] = { "<html><body><h1>File Not Found</h1></body></html>" };
+static const char	*gszContentType[] = { "text/html", "text/plain", "image/gif", "image/jpeg", "text/css", "image/png" };
+static const char	*gszWeekday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+static const char	*gszMonth[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun"
 							, "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 typedef struct tagCLIENTSOCKADDR {
