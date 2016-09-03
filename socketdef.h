@@ -16,10 +16,10 @@
 
 /* defs so we can code in UNIX/Linux style under Windows */
 #define write(h,p,l)		send(h,p,l,0)
-#define read(h,p,l)			recv(h,p,l,0)
-#define close(h)			closesocket(h)
-#define ioctl(h)			ioctlsocket(h)
-#define socklen_t			int
+#define read(h,p,l)		recv(h,p,l,0)
+#define close(h)		closesocket(h)
+#define ioctl(h)		ioctlsocket(h)
+#define socklen_t		int
 
 /*/////////////////////////////////////////////////////////////////////// */
 /* OpenVMS  */
@@ -41,7 +41,7 @@
 #include <time.h>
 /* defs so we can code in winsock style under Linux/UNIX */
 //#define send(h,p,l,f)		write(h,p,l)
-//#define recv(h,p,l)			read(h,p,l)
+//#define recv(h,p,l)		read(h,p,l)
 #endif // _VMS_WINDOWS
 
 #include <stdio.h>
@@ -65,7 +65,7 @@
 //#include <signal.h>
 
 #define closesocket(h)		close(h)
-#define ioctlsocket(h,p,l)		ioctl(h,p,l)
+#define ioctlsocket(h,p,l)	ioctl(h,p,l)
 
 #ifndef INVALID_SOCKET
 #define INVALID_SOCKET		-1
@@ -93,11 +93,14 @@ typedef struct sockaddr_in *PSOCKADDR_IN;
 
 #pragma message("socketdef.h - Linux compilation...")
 
+#ifndef __LINUX__
 #define __LINUX__
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>

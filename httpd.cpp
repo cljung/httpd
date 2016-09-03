@@ -32,10 +32,10 @@ static long		gcRequests = 0;
 static char		gszHttpSiteName[128];
 static char		gszHttpRoot[255] = ".";
 static char		gszDefaultPage[ 64 ] = { "default.htm" };
-static char		gszNotFound[] = { "<html><body><h1>File Not Found</h1></body></html>" };
-static char		*gszContentType[] = { "text/html", "text/plain", "image/gif", "image/jpeg", "text/css" };
-static char		*gszWeekday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-static char		*gszMonth[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun"
+static const char		gszNotFound[] = { "<html><body><h1>File Not Found</h1></body></html>" };
+static const char		*gszContentType[] = { "text/html", "text/plain", "image/gif", "image/jpeg", "text/css", "image/png¸" };
+static const char		*gszWeekday[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+static const char		*gszMonth[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun"
 							, "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 typedef struct tagCLIENTSOCKADDR {
@@ -48,7 +48,7 @@ HTTPCMDINFO	httpcmds[] = {
 		 , cmdPOST, "POST", sizeof("POST")-1, 1
 };
 
-#define MAX_HTTPCMDS		sizeof(httpcmds)/sizeof(httpcmds[0])
+#define MAX_HTTPCMDS		(int)(sizeof(httpcmds)/sizeof(httpcmds[0]))
 ////////////////////////////////////////////////////////////////////////////
 //
 void print_syntax( void )
@@ -176,23 +176,24 @@ int IsProcessShutdown( void )
 }
 /////////////////////////////////////////////////////////////////////
 // 
-int SetProcessShutdownFlag( int nRc, char *pszExitMessage )
+int SetProcessShutdownFlag( int nRc, const char *pszExitMessage )
 {
 	gfShutdown = true;
 	gnExitCode = nRc;
-	if ( !pszExitMessage )
-		pszExitMessage = "process exists";
+	char *msg = "process exits";
+	if ( pszExitMessage )
+		msg = (char*)pszExitMessage;
 	sprintf( gszExitMessage, "pid=0x%0X, rc=%d: %s"
 			, getpid()
-			, nRc, pszExitMessage );
+			, nRc, msg );
 	return nRc;
 }
 ////////////////////////////////////////////////////////////////////////////
 //
 void signal_handler( int sig )
 {
-	printf( "\nCtrl+C pressed - exiting...\n" );
-	SetProcessShutdownFlag( 1, "Ctrl+C pressed" );
+	printf( "\nCtrl+C pressed - exiting (sig=%d)...\n", sig );
+	SetProcessShutdownFlag( 1, (const char*)"Ctrl+C pressed" );
 }
 ////////////////////////////////////////////////////////////////////////////
 //
@@ -494,42 +495,45 @@ char HexToChar( const char *buf )
 // 
 char * WeekdayToString( struct tm *ptm)
 {
-	return gszWeekday[ ptm->tm_wday ];
+	return (char*)gszWeekday[ ptm->tm_wday ];
 }
 char * MonthToString( struct tm *ptm )
 {
-	return gszMonth[ ptm->tm_mon ];
+	return (char*)gszMonth[ ptm->tm_mon ];
 }
 char *FileToContentType( const char *filename )
 {
 	char	*p = (char*)strrchr( filename, '.' );
 	if ( !p )
-		return gszContentType[0];
+		return (char*)gszContentType[0];
 
 	p++;
 
 	if ( !stricmp( p, "htm" ) || !stricmp( p, "html" ) || !stricmp( p, "shtml" ))
-		return gszContentType[0];
+		return (char*)gszContentType[0];
 
 	if ( !stricmp( p, "txt" ) )
-		return gszContentType[1];
+		return (char*)gszContentType[1];
 
 	if ( !stricmp( p, "gif" ) )
-		return gszContentType[2];
+		return (char*)gszContentType[2];
 
 	if ( !stricmp( p, "jpg" ) || !stricmp( p, "jpeg" ) )
-		return gszContentType[3];
+		return (char*)gszContentType[3];
 	
 	if ( !stricmp( p, "css" ) )
-		return gszContentType[4];
+		return (char*)gszContentType[4];
 
-	return gszContentType[0];
+	if ( !stricmp( p, "png" ) )
+		return (char*)gszContentType[5];
+
+	return (char*)gszContentType[0];
 }
 /////////////////////////////////////////////////////////////////////
 // 
 bool SendHttpResponse( CLIENTSOCKADDR *pClient, char *buf
 							, int http_status
-							, FILE *fp, char *filename
+							, char *filename
 							, int nContentLength
 							)
 {
@@ -605,7 +609,7 @@ bool OnGet( CLIENTSOCKADDR *pClient
 	}
 
 	cch = cchBase;
-	while( *pS != '?' && !isspace(*pS) && pS < pTail && cch < sizeof(szURI)-1 )
+	while( *pS != '?' && !isspace(*pS) && pS < pTail && cch < (int)sizeof(szURI)-1 )
 	{
 		if ( *pS == '/' )
 #if (defined _MSC_VER)
@@ -646,7 +650,7 @@ bool OnGet( CLIENTSOCKADDR *pClient
 		if ( gfTrace && gnLogLevel >= 2 )
 			printf( "404 (%s, socket %d) - %s\n", inet_ntoa(pClient->sockaddr.sin_addr), pClient->hSocket, szURI );
 		nContentLength = strlen( gszNotFound );
-		SendHttpResponse( pClient, pReply, 404, fp, szURI+cchBase, nContentLength );
+		SendHttpResponse( pClient, pReply, 404, szURI+cchBase, nContentLength );
 		cchSent = send( pClient->hSocket, gszNotFound, nContentLength, 0 );
 		return true;
 	}
@@ -659,7 +663,7 @@ bool OnGet( CLIENTSOCKADDR *pClient
 		nContentLength = ftell( fp );
 		fseek( fp, 0, SEEK_SET );
 
-		SendHttpResponse( pClient, pReply, 200, fp, szURI+cchBase, nContentLength );
+		SendHttpResponse( pClient, pReply, 200, szURI+cchBase, nContentLength );
 		while( !feof(fp) )
 		{
 			cch = fread( szURI, 1, sizeof(szURI), fp );
@@ -758,7 +762,7 @@ bool TcpMonitorMain( int nPortNbr, int nFrequency )
     int				fd, n, result, fContinue = 1;
 	struct timeval	tv;
 	int				cchBufSize = 32767;
-	DWORD			*pdwSign;
+	unsigned long	*pdwSign;
 	char			*pchReq;
 	char			*pchResp;
 	bool			fSendResponse;
@@ -770,7 +774,7 @@ bool TcpMonitorMain( int nPortNbr, int nFrequency )
 
 	pchReq = (char*)malloc(cchBufSize);
 	memset( pchReq, 0, cchBufSize );
-	pdwSign = (DWORD*)pchReq;
+	pdwSign = (unsigned long*)pchReq;
 
 	pchResp = (char*)malloc(cchBufSize);
 	memset( pchResp, 0, cchBufSize );
@@ -946,7 +950,7 @@ bool TcpMonitorMain( int nPortNbr, int nFrequency )
 	free( pchReq );
 	free( pchResp );
 	if ( gfTrace && gnLogLevel >= 1 )
-		printf( "Requests handled: %d\n", gcRequests );
+		printf( "Requests handled: %ld\n", gcRequests );
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////
